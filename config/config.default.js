@@ -18,8 +18,10 @@ module.exports = appInfo => {
 
   config.multipart = {
     mode: 'file',
+    fileSize: '10000mb',
     whitelist: () => true,
   }
+
   config.UPLOAD_DIR = path.resolve(__dirname, '..', 'app/public')
 
   // add your middleware config here
