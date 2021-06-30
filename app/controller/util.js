@@ -31,45 +31,21 @@ class UtilController extends BaseController {
       uploadedList,
     })
   }
-  // .DS_Strore
+
   async getUploadedList(dirPath) {
     return fse.existsSync(dirPath)
       ? (await fse.readdir(dirPath)).filter(name => name[0] !== '.')
       : []
   }
 
-  async uploadfile1() {
-    // /public/hash/(hash+index)
-    // 报错
-    // if(Math.random()>0.3){
-    //   return this.ctx.status = 500
-    // }
-    const { ctx } = this
-    console.log(ctx.request)
-    const file = ctx.request.files[0]
-    const { hash, name } = ctx.request.body
-
-    const chunkPath = path.resolve(this.config.UPLOAD_DIR, hash)
-    // const filePath = path.resolve() // 文件最终存储的位置。合并之后
-
-    // console.log(name,file)
-
-    // console.log(file.filepath)
-    // console.log(this.config.UPLOAD_DIR)
-    if (!fse.existsSync(chunkPath)) {
-      await fse.mkdir(chunkPath)
-    }
-
-    await fse.move(file.filepath, `${chunkPath}/${name}`)
-
-    this.message('切片上传成功')
-    // this.success({
-    //   url:'xx'
-    // })
-  }
-
   async uploadfile() {
     // /public/hash/(hash+index)
+
+    // 模拟报错
+    // if (Math.random() < 0.3) {
+    //   return this.ctx.status = 500
+    // }
+
     const { ctx } = this
     console.log(ctx.request)
     const file = ctx.request.files[0]
