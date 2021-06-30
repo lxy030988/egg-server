@@ -69,15 +69,25 @@ class UtilController extends BaseController {
   }
 
   async uploadfile() {
+    // /public/hash/(hash+index)
     const { ctx } = this
     console.log(ctx.request)
     const file = ctx.request.files[0]
-    const { name } = ctx.request.body
-    console.log(file, name)
-    await fse.move(file.filepath, `${this.config.UPLOAD_DIR}/${file.filename}`)
+    const { hash, name } = ctx.request.body
+    // console.log(file, name)
+    const chunkPath = path.resolve(this.config.UPLOAD_DIR, hash)
+
+    // await fse.move(file.filepath, `${this.config.UPLOAD_DIR}/${file.filename}`)
+
+    if (!fse.existsSync(chunkPath)) {
+      await fse.mkdir(chunkPath)
+    }
+
+    await fse.move(file.filepath, `${chunkPath}/${name}`)
 
     this.success({
-      url: `/public/${file.filename}`
+      // url: `/public/${file.filename}`
+      msg: '切片上传成功'
     })
   }
 
