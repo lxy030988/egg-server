@@ -47,10 +47,10 @@ class UtilController extends BaseController {
     // }
 
     const { ctx } = this
-    console.log(ctx.request)
+    // console.log(ctx.request)
     const file = ctx.request.files[0]
-    const { hash, name } = ctx.request.body
-    // console.log(file, name)
+    const { hash, name, size } = ctx.request.body
+    // console.log(file, name, size)
     const chunkPath = path.resolve(this.config.UPLOAD_DIR, hash)
 
     // await fse.move(file.filepath, `${this.config.UPLOAD_DIR}/${file.filename}`)
@@ -59,7 +59,12 @@ class UtilController extends BaseController {
       await fse.mkdir(chunkPath)
     }
 
-    await fse.move(file.filepath, `${chunkPath}/${name}`)
+    let dest = `${chunkPath}/${name}`
+    if (size) {
+      dest += `-${size}`
+    }
+    // console.log('dest', dest)
+    await fse.move(file.filepath, dest)
 
     this.success({
       // url: `/public/${file.filename}`

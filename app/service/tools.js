@@ -4,29 +4,37 @@ const fse = require('fs-extra')
 
 class ToolService extends Service {
 
-  async mergeFile(filepPath, filehash, size) {
+  async mergeFile(filePath, filehash, size) {
     const chunkdDir = path.resolve(this.config.UPLOAD_DIR, filehash) // 切片的文件夹
     let chunks = await fse.readdir(chunkdDir)
     chunks.sort((a, b) => a.split('-')[1] - b.split('-')[1])
-    chunks = chunks.map(cp => path.resolve(chunkdDir, cp))
-    await this.mergeChunks(chunks, filepPath, size)
+    chunks = chunks.map(item => ({ path: path.resolve(chunkdDir, item), size: Number(item.split('-')[2]) }))
+    // console.log('chunks', chunks)
+    await this.mergeChunks(chunks, filePath, size)
   }
 
-  async mergeChunks(files, dest, size) {
-    const pipStream = (filePath, writeStream) => new Promise(resolve => {
-      const readStream = fse.createReadStream(filePath)
+  async mergeChunks(chunks, dest, size) {
+    let cur = 0
+
+    const pipStream = (file, writeStream) => new Promise(resolve => {
+      const readStream = fse.createReadStream(file.path)
       readStream.on('end', () => {
-        fse.unlinkSync(filePath)//删除切片
+        fse.unlinkSync(file.path)//删除切片
         resolve()
       })
+      cur += (file.size || size)
       readStream.pipe(writeStream)
     })
 
+
     await Promise.all(
-      files.map((file, index) => pipStream(file, fse.createWriteStream(dest, {
-        start: index * size,
-        end: (index + 1) * size,
-      })))
+      chunks.map((file, index) => {
+        // console.log('cur', cur)
+        return pipStream(file, fse.createWriteStream(dest, {
+          start: cur,
+          end: cur + (file.size || size),
+        }))
+      })
     )
   }
 
